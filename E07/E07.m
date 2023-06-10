@@ -1,0 +1,10 @@
+clc; clear; close all; warning off all;
+I=imread("cameraman.tif");
+j=imnoise(I,"salt & pepper");
+k=fspecial("average",[3,3]);
+n=imfilter(j,k);
+m=medfilt2(j,[3 3]);
+subplot(2,2,1),imshow(I),title("ORİJİNAL RESİM");
+subplot(2,2,2),imshow(j),title("TUZ-FİLTER");
+subplot(2,2,3),imshow(n),title("ORTALAMA FİLTER");
+subplot(2,2,4),imshow(m),title("MEDİAN FİLTER");

@@ -1,0 +1,17 @@
+clc; clear; close all; warning off all;
+img=imread('airplane.jpg');
+I=img(:,:,3);
+bw=imbinarize(I,173/255);
+se90=strel('line',4,90);
+se0=strel('line',5,0);
+bw=imerode(bw,[se90 se0]);
+se=strel('diamond',2);
+bw=imdilate(bw,se);
+bw=imcomplement(bw);
+bw=bwareaopen(bw,2000);
+bw=imfill(bw,'holes');
+s=regionprops(bw,'BoundingBox');
+bbox=cat(1,s.BoundingBox);
+rgb=insertShape(img,'Rectangle',bbox,'Color','Yellow');
+kirp=imcrop(img,bbox);
+figure,imshow(kirp);

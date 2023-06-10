@@ -1,0 +1,11 @@
+clc; clear; close all; warning off all;
+BW=imread("coins.png");
+lvl=graythresh(BW);
+BW=imbinarize(BW,lvl);
+BW2=bwmorph(BW,"remove");
+BW3=bwmorph(BW,"skel",Inf);
+BW4=bwmorph(BW,"thin");
+subplot(2,2,1),imshow(BW),title("ORIGINAL");
+subplot(2,2,2),imshow(BW2),title("REMOVE");
+subplot(2,2,3),imshow(BW3),title("SKEL");
+subplot(2,2,4),imshow(BW4),title("THIN");

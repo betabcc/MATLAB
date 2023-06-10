@@ -1,0 +1,65 @@
+clc; clear; close all; warning off all;
+im=imread('top.jpg');
+figure,imshow(im);
+im_gray=rgb2gray(im);
+figure,imshow(im_gray);
+e=edge(im_gray,'canny');
+figure,imshow(e);
+radii=25:1:40;
+h=circle_hough(e,radii,'same','normalise');
+peaks=circle_houghpeaks(h,radii,"nhoodxy",15,"nhoodr",21,"npeaks",1);
+figure,imshow(im);
+hold on;
+bw=false(size(im_gray));
+for peak=peaks
+    [x, y]=circlepoints(peak(3));
+    plot(x+peak(1), y+peak(2), 'y-','LineWidth',4);
+    bw(x+peak(2), y+peak(1)) = true;
+end
+hold off
+im2=insertShape(im,"circle",[peaks(1),peaks(2),peaks(3)],"LineWidth",4);
+R=im2(:,:,1);
+G=im2(:,:,2);
+B=im2(:,:,3);
+[r,c,~]=find(R==255 & G==255 & B==0);
+numind=size(r,1);
+bin=false(size(im2,1), size(im2,2));
+for i=1:numind
+    bin(r(i),c(i))=1;
+end
+bin=imfill(bin,"holes");
+str=strel("disk",5);
+bin=imerode(bin,str);
+figure,imshow(bin);
+R=im(:,:,1);
+G=im(:,:,2);
+B=im(:,:,3);
+R(~bin)=0;
+G(~bin)=0;
+B(~bin)=0;
+RGB=cat(3,R,G,B);
+figure,imshow(RGB);
+stats=regionprops(bin,"all");
+bbox=cat(1,stats.BoundingBox);
+im3=imcrop(RGB,bbox);
+figure, imshow(im3);
+im_second = imread('arkaplan.jpg');
+[height2, width2, channels2] = size(im_second);
+center_y = round(height2 / 2);
+center_x = round(width2 / 2);
+[height1, width1, channels1] = size(im3);
+start_y = center_y - round(height1 / 2);
+end_y = start_y + height1 - 1;
+start_x = center_x - round(width1 / 2);
+end_x = start_x + width1 - 1;
+alpha_mask = im3(:, :, 1) ~= 0 | im3(:, :, 2) ~= 0 | im3(:, :, 3) ~= 0;
+alpha_mask_3channel = repmat(alpha_mask, [1, 1, 3]);
+im3_double = double(im3);
+im_second_double = double(im_second);
+im_second_patch = im_second_double(start_y:end_y, start_x:end_x, :);
+alpha_mask_3channel_double = double(alpha_mask_3channel);
+inverse_alpha_mask_3channel_double = double(~alpha_mask_3channel);
+blended_patch_double = im3_double .* alpha_mask_3channel_double + im_second_patch .* inverse_alpha_mask_3channel_double;
+blended_patch = uint8(blended_patch_double);
+im_second(start_y:end_y, start_x:end_x, :) = blended_patch;
+figure, imshow(im_second);
